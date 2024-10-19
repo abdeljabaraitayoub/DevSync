@@ -31,10 +31,10 @@ public class User {
     private String password;
 
     @Column(name = "tokens")
-    private int tokens;
+    private int tokens = 2;
 
     @Column(name = "delete_tokens")
-    private int deleteTokens;
+    private int deleteTokens = 1;
 
     @Column(name = "username")
     private String username;
@@ -49,10 +49,10 @@ public class User {
     private List<Task> tasks;
 
 
+    public User() {
+    }
 
-    public User() {}
-
-    public User(Long id, String name, String prenom, String email, String password, String username , UserType userType,int tokens,int deleteTokens) {
+    public User(Long id, String name, String prenom, String email, String password, String username, UserType userType, int tokens, int deleteTokens) {
         this.id = id;
         this.name = name;
         this.prenom = prenom;
@@ -101,7 +101,6 @@ public class User {
     }
 
 
-
     public String getUsername() {
         return username;
     }
@@ -123,7 +122,6 @@ public class User {
     }
 
     public void setTokens(int tokens) {
-
         this.tokens = tokens;
     }
 
@@ -150,10 +148,6 @@ public class User {
     private String hashPassword(String password) {
         return BCrypt.hashpw(password, BCrypt.gensalt());
     }
-
-
-
-
 
 
 }

@@ -1,12 +1,13 @@
 package com.devsync.service;
 
-import com.devsync.dao.UserDao;
+import com.devsync.Repositories.UserDao;
 import com.devsync.domain.entities.User;
 import com.devsync.domain.enums.UserType;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -18,7 +19,7 @@ public class UserService {
         userDao = new UserDao();
     }
 
-    public void findAll(HttpServletRequest req, HttpServletResponse resp) throws  ServletException ,IOException{
+    public void findAll(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         List<User> users = userDao.findAll();
         req.setAttribute("users", users);
         req.getRequestDispatcher("/pages/users/list.jsp").forward(req, resp);
@@ -46,11 +47,10 @@ public class UserService {
         user.setUserType(UserType.valueOf(userType.toUpperCase()));
         if (user.getUserType() == UserType.MANAGER) {
             user.setTokens(0);
-        }else {
+        } else {
             user.setTokens(2);
             user.setDeleteTokens(1);
         }
-
 
 
         userDao.save(user);
@@ -92,7 +92,7 @@ public class UserService {
     public void delete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         Long userId = Long.parseLong(req.getParameter("id"));
         userDao.delete(userId);
-       // req.setAttribute("successDeleteMessage", "User deleted successfully!");
+        // req.setAttribute("successDeleteMessage", "User deleted successfully!");
         resp.sendRedirect(req.getContextPath() + "/users");
     }
 

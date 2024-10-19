@@ -1,0 +1,28 @@
+Oct 19, 2024 4:25:40 PM com.devsync.utils.Schedules main
+INFO: Starting scheduler
+Oct 19, 2024 4:25:40 PM com.devsync.utils.Schedules main
+INFO: Scheduler started successfully
+Oct 19, 2024 4:25:40 PM com.devsync.utils.Schedules refreshTokens
+INFO: Starting token refresh process
+Oct 19, 2024 4:25:42 PM com.devsync.utils.Schedules refreshTokens
+INFO: Token refresh completed
+Oct 19, 2024 4:25:42 PM com.devsync.utils.Schedules updateTokensForUnansweredTasks
+INFO: Starting token update for unanswered tasks
+Oct 19, 2024 4:25:42 PM com.devsync.utils.Schedules updateTokensForUnansweredTasks
+INFO: Token update for unanswered tasks completed
+Oct 19, 2024 4:26:10 PM com.devsync.utils.Schedules updateTokensForUnansweredTasks
+INFO: Starting token update for unanswered tasks
+Oct 19, 2024 4:26:10 PM com.devsync.utils.Schedules updateTokensForUnansweredTasks
+INFO: Token update for unanswered tasks completed
+Oct 19, 2024 4:26:40 PM com.devsync.utils.Schedules updateTokensForUnansweredTasks
+INFO: Starting token update for unanswered tasks
+Oct 19, 2024 4:26:40 PM com.devsync.utils.Schedules updateTokensForUnansweredTasks
+INFO: Token update for unanswered tasks completed
+Oct 19, 2024 4:26:40 PM com.devsync.utils.Schedules refreshTokens
+INFO: Starting token refresh process
+Oct 19, 2024 4:26:40 PM com.devsync.utils.Schedules refreshTokens
+INFO: Token refresh completed
+Oct 19, 2024 4:27:10 PM com.devsync.utils.Schedules updateTokensForUnansweredTasks
+INFO: Starting token update for unanswered tasks
+Oct 19, 2024 4:27:10 PM com.devsync.utils.Schedules updateTokensForUnansweredTasks
+INFO: Token update for unanswered tasks completed

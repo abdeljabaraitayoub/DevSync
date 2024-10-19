@@ -1,29 +1,21 @@
 package com.devsync.service;
 
-import com.devsync.dao.TaskDao;
-import com.devsync.dao.UserDao;
+import com.devsync.Repositories.TaskDao;
+import com.devsync.Repositories.UserDao;
 import com.devsync.domain.entities.Task;
 import com.devsync.domain.entities.User;
 import com.devsync.domain.entities.Tag;
 import com.devsync.domain.enums.TaskStatus;
 
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 public class TaskService {
-
     private TaskDao taskDao;
-   private UserDao userDao;
+    private UserDao userDao;
     private UserService userService;
     private TagService tagService;
 
@@ -36,36 +28,18 @@ public class TaskService {
         updateTaskStatuses();
     }
 
-
-    public void findAll(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        List<Task> tasks = taskDao.findAll();
-        List<User> users = userDao.findAll();
-        req.setAttribute("tasks", tasks);
-        req.setAttribute("users", users);
-        req.getRequestDispatcher("/pages/tasks/list.jsp").forward(req, resp);
+    public List<Task> findAll() {
+        return taskDao.findAll();
     }
 
+    public List<User> findAllUsers() {
+        return userDao.findAll();
+    }
 
-    public void save(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        req.setCharacterEncoding("UTF-8");
-
-        LocalDate dateEnd = LocalDate.parse(req.getParameter("dateEnd"));
-
-
-        if (dateEnd.isBefore(LocalDate.now().plusDays(3))){
-            HttpSession session = req.getSession();
-            session.setAttribute("errorMessage", "end date must be  3 days from now");
-            resp.sendRedirect(req.getContextPath() + "/tasks?action=create");
-            return;
+    public void save(String title, String description, TaskStatus status, LocalDate dateEnd, Long userId, Long createdByUserId, List<Long> tagIds) throws IllegalArgumentException {
+        if (dateEnd.isBefore(LocalDate.now().plusDays(3))) {
+            throw new IllegalArgumentException("End date must be at least 3 days from now");
         }
-
-        String title = req.getParameter("title");
-
-        String description = req.getParameter("description");
-        TaskStatus status = TaskStatus.valueOf(req.getParameter("status"));
-        LocalDate dateCreated =  LocalDate.now();
-        Long userId = Long.parseLong(req.getParameter("user_id"));
-        Long createdByUserId = Long.parseLong(req.getParameter("createdByUser"));
 
         User user = userService.findById(userId);
         User createdByUser = userService.findById(createdByUserId);
@@ -74,53 +48,29 @@ public class TaskService {
         task.setTitle(title);
         task.setDescription(description);
         task.setStatus(status);
-        task.setDateCreated(dateCreated);
+        task.setDateCreated(LocalDate.now());
         task.setDateEnd(dateEnd);
         task.setUser(user);
         task.setCreatedByUser(createdByUser);
 
-        String[] tagIds = req.getParameterValues("tags[]");
         List<Tag> selectedTags = new ArrayList<>();
         if (tagIds != null) {
-            for (String tagId : tagIds) {
-                Long id = Long.parseLong(tagId);
-                Tag tag = tagService.findById(id);
+            for (Long tagId : tagIds) {
+                Tag tag = tagService.findById(tagId);
                 selectedTags.add(tag);
             }
         }
 
-
-
-
         task.setTags(selectedTags);
 
-        HttpSession session = req.getSession();
-        session.setAttribute("successMessage", "Task created successfully!");
-
         taskDao.save(task);
-        resp.sendRedirect(req.getContextPath() + "/tasks");
     }
 
-    public void edit(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        Long taskId = Long.parseLong(req.getParameter("id"));
-        Task task = taskDao.findById(taskId);
-        if (task != null) {
-            req.setAttribute("task", task);
-            req.getRequestDispatcher("/pages/tasks/update.jsp").forward(req, resp);
-        }
+    public Task findById(Long taskId) {
+        return taskDao.findById(taskId);
     }
 
-    public void update(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        Long taskId = Long.parseLong(req.getParameter("id"));
-        String title = req.getParameter("title");
-        String description = req.getParameter("description");
-        TaskStatus status = TaskStatus.valueOf(req.getParameter("status"));
-        LocalDate dateCreated = LocalDate.parse(req.getParameter("dateCreated"));
-        LocalDate dateEnd = LocalDate.parse(req.getParameter("dateEnd"));
-        Long userId = Long.parseLong(req.getParameter("userId"));
-
-       // User user = userDao.findById(userId);
-
+    public void update(Long taskId, String title, String description, TaskStatus status, LocalDate dateCreated, LocalDate dateEnd, Long userId) {
         Task task = new Task();
         task.setId(taskId);
         task.setTitle(title);
@@ -128,52 +78,58 @@ public class TaskService {
         task.setStatus(status);
         task.setDateCreated(dateCreated);
         task.setDateEnd(dateEnd);
-       // task.setUser(user);
 
         taskDao.update(task);
-        resp.sendRedirect(req.getContextPath() + "/tasks");
     }
 
-    public void delete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        Long taskId = Long.parseLong(req.getParameter("id"));
-        Long userId = Long.parseLong(req.getParameter("userId"));
+    public void delete(Long taskId, Long userId) throws IllegalStateException {
         User user = userDao.findById(userId);
-        taskDao.delete(taskId);
-        user.setDeleteTokens(0);
-        userDao.update(user);
-        req.getSession().setAttribute("user", user);
-        resp.sendRedirect(req.getContextPath() + "/tasks");
+        Task task = taskDao.findById(taskId);
+
+        if (task == null) {
+            throw new IllegalStateException("Task not found");
+        }
+
+        if (task.getCreatedByUser().getId().equals(userId)) {
+            taskDao.delete(taskId);
+        } else {
+            if (user.getDeleteTokens() > 0) {
+                user.setDeleteTokens(user.getDeleteTokens() - 1);
+                userDao.update(user);
+                taskDao.delete(taskId);
+            } else {
+                throw new IllegalStateException("You have no delete tokens left");
+            }
+        }
     }
 
-    public void displayCreateForm(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        req.setAttribute("users", userService.getUserWhoHaveUserTypeUser());
-        req.setAttribute("tags", tagService.getAllTags());
-        req.getRequestDispatcher("pages/tasks/create.jsp").forward(req, resp);
-
+    public List<User> getUserWhoHaveUserTypeUser() {
+        return userService.getUserWhoHaveUserTypeUser();
     }
 
-    public void updateStatus(HttpServletRequest req, HttpServletResponse resp) {
-        Long taskId = Long.parseLong(req.getParameter("taskId"));
+    public List<Tag> getAllTags() {
+        return tagService.getAllTags();
+    }
+
+    public void updateStatus(Long taskId, TaskStatus newStatus) {
         Task task = taskDao.findById(taskId);
         if (task != null) {
-            TaskStatus status = TaskStatus.valueOf(req.getParameter("newStatus"));
-            task.setStatus(status);
+            if (task.getDateEnd().isBefore(LocalDate.now()) && task.getStatus() != TaskStatus.DONE) {
+                task.setStatus(TaskStatus.OVERDUE);
+            } else {
+                task.setStatus(newStatus);
+            }
             taskDao.update(task);
         }
     }
 
-    public void updateUser(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-
-        Long taskId = Long.parseLong(req.getParameter("task_id"));
-        Long userId = Long.parseLong(req.getParameter("user_id"));
+    public void updateUser(Long taskId, Long userId) {
         Task task = taskDao.findById(taskId);
         User user = userDao.findById(userId);
         if (task != null && user != null) {
             task.setUser(user);
             taskDao.update(task);
         }
-
-        resp.sendRedirect(req.getContextPath() + "/tasks");
     }
 
     private void updateTaskStatuses() {
@@ -187,6 +143,16 @@ public class TaskService {
             }
             taskDao.update(task);
         }
+    }
+
+    public void requestTask(int userId, int taskId) {
+        if (userId == 0) {
+            return;
+        }
+        Task task = taskDao.findById((long) taskId);
+        task.setRequested(true);
+        task.setDateRequested(LocalDateTime.now());
+        taskDao.update(task);
     }
 
 

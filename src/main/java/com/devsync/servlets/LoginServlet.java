@@ -1,18 +1,17 @@
 package com.devsync.servlets;
 
-import com.devsync.dao.UserDao;
+import com.devsync.Repositories.UserDao;
 import com.devsync.domain.entities.User;
-import com.devsync.service.UserService;
 import com.devsync.utils.SessionUtil;
 import org.mindrot.jbcrypt.BCrypt;
 
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 
 
@@ -22,12 +21,10 @@ public class LoginServlet extends HttpServlet {
     private UserDao userDao;
 
 
-
     @Override
     public void init() throws ServletException {
         userDao = new UserDao();
     }
-
 
 
     @Override
@@ -36,7 +33,7 @@ public class LoginServlet extends HttpServlet {
             resp.sendRedirect(req.getContextPath() + "/tasks");
             return;
         }
-            req.getRequestDispatcher("pages/auth/login.jsp").forward(req, resp);
+        req.getRequestDispatcher("pages/auth/login.jsp").forward(req, resp);
     }
 
 
@@ -44,7 +41,7 @@ public class LoginServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
         String method = req.getParameter("_method");
-        if ( method.equals("DESTROY")) {
+        if (method.equals("DESTROY")) {
             req.getSession().invalidate();
             resp.sendRedirect(req.getContextPath() + "/login");
         } else {
@@ -65,7 +62,6 @@ public class LoginServlet extends HttpServlet {
     }
 
 
-
     public User authenticate(String email, String password) {
         User user = userDao.findByEmail(email);
         if (user != null) {
@@ -75,8 +71,6 @@ public class LoginServlet extends HttpServlet {
         }
         return null;
     }
-
-
 
 
 }

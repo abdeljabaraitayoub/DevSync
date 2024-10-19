@@ -6,6 +6,8 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 
@@ -45,22 +47,28 @@ public class Task {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private User createdByUser;
 
+    @Column(name = "is_requested")
+    private boolean isRequested = false;
+
+
+    private LocalDateTime dateRequested = LocalDateTime.now();
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "task_tags",
             joinColumns = @JoinColumn(name = "task_id"),
-            inverseJoinColumns = @JoinColumn(name = "tag_id")
-    )
+            inverseJoinColumns = {
+                    @JoinColumn(name = "tag_id"),
+            })
 
     @OnDelete(action = OnDeleteAction.CASCADE)
     private List<Tag> tags;
 
-    public Task() {}
+    public Task() {
+    }
 
 
-
-    public Task(Long id, String title, String description, TaskStatus status, LocalDate dateCreated, LocalDate dateEnd, User user , User createdByUser) {
+    public Task(Long id, String title, String description, TaskStatus status, LocalDate dateCreated, LocalDate dateEnd, User user, User createdByUser) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -138,9 +146,25 @@ public class Task {
     public List<Tag> getTags() {
         return tags;
     }
+
     public void setTags(List<Tag> tags) {
         this.tags = tags;
     }
 
 
+    public boolean isRequested() {
+        return isRequested;
+    }
+
+    public void setRequested(boolean requested) {
+        isRequested = requested;
+    }
+
+    public LocalDateTime getDateRequested() {
+        return dateRequested;
+    }
+
+    public void setDateRequested(LocalDateTime dateRequested) {
+        this.dateRequested = dateRequested;
+    }
 }
